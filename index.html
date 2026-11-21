@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Match Game</title>
+<style>
+body{font-family:Arial;background:#0f172a;color:white;padding:25px;text-align:center}
+main{max-width:500px;margin:auto;background:#1e293b;padding:25px;border-radius:15px}
+#board{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0}
+.card{aspect-ratio:1;background:#334155;color:white;border:0;border-radius:10px;font-size:30px;cursor:pointer}
+.matched{background:#15803d}
+button.reset{background:#0284c7;color:white;border:0;padding:12px 20px;border-radius:8px;cursor:pointer}
+</style>
+</head>
+<body>
+<main>
+<h1>Memory Match</h1>
+<p>Find all matching pairs.</p>
+<p id="status"></p>
+<div id="board"></div>
+<button class="reset" onclick="start()">New Game</button>
+</main>
+<script>
+let cards=[],first=null,locked=false,moves=0,pairs=0,round=0;
+function start(){
+ round++;
+ const symbols=["🍎","🍋","🍇","🍉","⭐","🎈"];
+ cards=[...symbols,...symbols];
+ for(let i=cards.length-1;i>0;i--){
+  const j=Math.floor(Math.random()*(i+1));
+  [cards[i],cards[j]]=[cards[j],cards[i]];
+ }
+ first=null;
+ locked=false;
+ moves=0;
+ pairs=0;
+ const board=document.getElementById("board");
+ board.innerHTML="";
+ cards.forEach((symbol,i)=>{
+  const button=document.createElement("button");
+  button.className="card";
+  button.textContent="?";
+  button.onclick=()=>flip(button,i);
+  board.appendChild(button);
+ });
+ update();
+}
+function update(){
+ document.getElementById("status").textContent=
+ "Moves: "+moves+" | Pairs: "+pairs+"/6"+(pairs===6?" | You Win!":"");
+}
+function flip(button,i){
+ if(locked||button.disabled||button===first?.button)return;
+ button.textContent=cards[i];
+ if(!first){
+  first={button,i};
+  return;
+ }
+ moves++;
+ if(cards[first.i]===cards[i]){
+  first.button.disabled=true;
+  button.disabled=true;
+  first.button.classList.add("matched");
+  button.classList.add("matched");
+  pairs++;
+  first=null;
+ }else{
+  locked=true;
+  const previous=first.button;
+  const activeRound=round;
+  setTimeout(()=>{
+   if(activeRound!==round)return;
+   previous.textContent="?";
+   button.textContent="?";
+   first=null;
+   locked=false;
+  },700);
+ }
+ update();
+}
+start();
+</script>
+</body>
+</html>
